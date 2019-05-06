@@ -1,35 +1,7 @@
-# Face detection demo (Flask app)
+# Face Recognition Using a Machine Learning Technique
 
-This is a very simple Flask app that let's the user upload a image and detects how many (if any) faces are there in the picture.
+This is a web app that  allows  the user to upload a image (sample images are provided in the folder test_sample). The app then detects and recognizes (outputs a face id) the uploaded face image if it is present in the database (Yale Face Database has been used to build the app). PCA and KNN has been used to build the classifier.
 
 ## Hosting on Heroku
 
-Try it [here](https://face-detection-flask.herokuapp.com/).
-
-##### Generate pipfile with command:
-
-`pipenv install opencv-contrib-python`
-
-`pipenv install Flask`
-
-`pipenv install gunicorn`
-
-`pipenv install numpy`
-
-##### Add the following buildpack:
-
-https://elements.heroku.com/buildpacks/heroku/heroku-buildpack-apt
-
-and include a list of apt package names to be installed the `Aptfile`
-
-## Docker
-
-Docker container based on: https://hub.docker.com/r/shosoar/alpine-python-opencv/
-
-To build the docker image and run locally:
-
-`cd face_detection_flask`
-
-`docker build -t face_detection_flask .`
-
-`docker run -it -p 3000:80 face_detection_flask`
+Try it [here](https://rmahbub-face-recog-webapp.herokuapp.com/).
