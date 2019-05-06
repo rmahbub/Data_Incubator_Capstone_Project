@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Face detection demo</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body style="background-image: linear-gradient(to bottom, #99ccff 0%, #000066 100%);background-repeat: no-repeat;width: 100%; height: 100vh;">
+
+<div class = "container">
+    <div class = "starter-template">
+        <h1>Face Recognition Example</h1>
+        <p class = "lead"> Try uploading a sample image to see if a match is detected </p>
+        <p> Face recognition using PCA-KNN | Data Incubator Capstone Project </p>
+        <p> Image size limit: 2 MB </p>
+        <p> By Rubayyat Mahbub - May, 2019 </p>
+    </div>
+</div>
+
+<header class="navbar">
+    <form action="/upload" method="post" enctype="multipart/form-data" >
+        <div align="center">
+            <label class="btn btn-default btn-file">
+                Browse <input type="file" name="image" style="display: none;">
+            </label>
+            <input type="submit" value="Upload your image" class="btn btn-primary">
+        </div>
+    </form>
+</header>
+
+<div class="text-center">
+    {% if init %}
+        {% if faceDetected %}
+            <div class="alert alert-success" style="margin-top:18px;">
+                <strong>Match Detected!</strong> {{ num_faces }} is the Person ID!
+            </div>
+            {% if image_to_show %}
+                <div>
+                    <img src="{{ image_to_show }}">
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-danger" style="margin-top:18px;">
+                <strong>Nope!</strong> No match detected
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+</body>
+</html>
