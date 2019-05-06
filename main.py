@@ -1,8 +1,14 @@
 import os
 from flask import Flask, render_template, request
-import cv2
 import numpy as np
 import base64
+import glob
+from PIL import Image
+import sklearn
+from sklearn.metrics import r2_score
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.externals import joblib
+import pickle
 
 app = Flask(__name__)
 
@@ -16,80 +22,57 @@ def start_page():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    file = request.files['image']
+    file = request.files.get('image')
 
     # Save file
     #filename = 'static/' + file.filename
     #file.save(filename)
 
     # Read image
-    image = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_UNCHANGED)
-    
-    # Detect faces
-    faces = detect_faces(image)
+    #img = cv2.imdecode(np.fromstring(file.read(), np.uint8), cv2.IMREAD_UNCHANGED)
+    #img=np.array(Image.open(file.read()))
+    #img = np.array(file.read())
 
-    if len(faces) == 0:
-        faceDetected = False
-        num_faces = 0
-        to_send = ''
-    else:
+    #filename = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    #file.save(file.filename)
+    file.save(file.filename)
+    
+    img=np.array(Image.open(file.filename))
+    img = img.reshape(img.shape[0]*img.shape[1])
+    
+    os.remove(file.filename)
+    # Detect 
+
+    with open('trained_parameters/eigenfaces_yale.pickle', 'rb') as f:
+        eigen_faces = pickle.load(f)
+    with open('trained_parameters/normalize', 'rb') as f:
+        normalizer = pickle.load(f)
+    #with open('model_knn', 'rb') as f:
+        #clf2 = pickle.load(f)
+    with open('trained_parameters/trainX_norm.pickle', 'rb') as f:
+        trainX_norm = pickle.load(f)
+    with open('trained_parameters/trainY.pickle', 'rb') as f:
+        trainY = pickle.load(f)
+
+    #filename= 'finalized_modelknn.sav'
+    #clf2_new = joblib.load(filename)
+
+    projected_testX_img = np.dot(img, eigen_faces[:30].T)
+    projected_testX_img_2=projected_testX_img.reshape(1, -1)
+    testX_norm_img = normalizer.transform(projected_testX_img_2)
+    clf2= KNeighborsRegressor(n_neighbors=1)
+    clf2.fit(trainX_norm,trainY)
+    c=clf2.predict(testX_norm_img)
+    if len(c) > 0:
         faceDetected = True
-        num_faces = len(faces)
-        
-        # Draw a rectangle
-        for item in faces:
-            draw_rectangle(image, item['rect'])
-        
-        # Save
-        #cv2.imwrite(filename, image)
-        
-        # In memory
-        image_content = cv2.imencode('.jpg', image)[1].tostring()
-        encoded_image = base64.encodestring(image_content)
-        to_send = 'data:image/jpg;base64, ' + str(encoded_image, 'utf-8')
+    else:
+        faceDetected = False
 
-    return render_template('index.html', faceDetected=faceDetected, num_faces=num_faces, image_to_show=to_send, init=True)
 
-# ----------------------------------------------------------------------------------
-# Detect faces using OpenCV
-# ----------------------------------------------------------------------------------  
-def detect_faces(img):
-    '''Detect face in an image'''
-    
-    faces_list = []
+    return render_template('index.html', faceDetected=faceDetected, num_faces= c[0]+1, init=True)
 
-    # Convert the test image to gray scale (opencv face detector expects gray images)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Load OpenCV face detector (LBP is faster)
-    face_cascade = cv2.CascadeClassifier('opencv-files/lbpcascade_frontalface.xml')
-
-    # Detect multiscale images (some images may be closer to camera than others)
-    # result is a list of faces
-    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5);
-
-    # If not face detected, return empty list  
-    if  len(faces) == 0:
-        return faces_list
-    
-    for i in range(0, len(faces)):
-        (x, y, w, h) = faces[i]
-        face_dict = {}
-        face_dict['face'] = gray[y:y + w, x:x + h]
-        face_dict['rect'] = faces[i]
-        faces_list.append(face_dict)
-
-    # Return the face image area and the face rectangle
-    return faces_list
-# ----------------------------------------------------------------------------------
-# Draw rectangle on image
-# according to given (x, y) coordinates and given width and heigh
-# ----------------------------------------------------------------------------------
-def draw_rectangle(img, rect):
-    '''Draw a rectangle on the image'''
-    (x, y, w, h) = rect
-    cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 255), 2)
 
 if __name__ == "__main__":
     # Only for debugging while developing
-    app.run(host='0.0.0.0', debug=True, port=80)
+    #app.run(host='0.0.0.0', debug=True, port=80)
+    app.run(debug=True)
