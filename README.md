@@ -4,6 +4,8 @@ The repository contains decription and codes for the project titled "Face Recogn
 
 The detail analysis and decription of the Project can be found here:
 
+https://rmahbub.github.io/Data_Incubator_Project_Details/
+
 The detail codes used for the analysis can be found here:
 
 https://github.com/rmahbub/Data_Incubator_Capstone_Project/blob/master/Details/Code_Details.ipynb
